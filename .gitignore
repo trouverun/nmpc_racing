@@ -1,0 +1,12 @@
+*.pt
+kp_data
+*.npy
+c_generated_code/
+debug/
+driver/nonlinear_mpc/dynamics_identification/car_data/
+*.json
+*.yaml
+__p
+*.pyc
+__pycache__/
+driver/nonlinear_mpc/dynamics_identification/debugscript.py
