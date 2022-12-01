@@ -3,15 +3,15 @@ from scipy.spatial.transform import Rotation
 from utils import TransInv, RpToTrans
 
 
-dynamics_data_folder = "/home/aleksi/PycharmProjects/autonomous_racing/car_data/"
+dynamics_data_folder = "/home/aleksi/PycharmProjects/nmpc_racing/car_data/"
 
 # Simulator
 max_fsds_client_attempts = 10
 max_failed_mpc_solves = 10
-max_stuck_steps = 100
+max_stuck_steps = 10
 lap_speed_increase = 1.25
 controller_no_cones_attempts = 5
-max_collisions = 0
+max_collisions = 5
 
 
 # Camera params
@@ -76,24 +76,35 @@ blend_max_speed = 5
 
 # Identified params
 car_mass = 190
-car_inertia = 231.79156494140625
-wheel_Bf = -17.375244140625
-wheel_Cf = 0.8026883602142334
-wheel_Df = 1545.7764892578125
-wheel_Br = -5.899516582489014
-wheel_Cr = 5.130153656005859
-wheel_Dr = 786.07373046875
-car_Tm = 2467.453369140625
-car_Tr0 = 44.012840270996094
-car_Tr2 = 3.43312931060791
+car_inertia = 227.11926270
+wheel_Bf = -13.20129013
+wheel_Cf = -1.48318338
+wheel_Df = -1180.37243652
+wheel_Br = -5.21678352
+wheel_Cr = 6.60196829
+wheel_Dr = 674.78057861
+car_Tm = 2334.06518555
+car_Tr0 = 40.22737122
+car_Tr2 = 3.24289775
+
+# prevs:
+# car_inertia = 222.60449219
+# wheel_Bf = -12.82018471
+# wheel_Cf = -1.46732950
+# wheel_Df = -1185.33837891
+# wheel_Br = -4.38556051
+# wheel_Cr = 7.58791828
+# wheel_Dr = 681.89630127
+# car_Tm = 2222.82739258
+# car_Tr0 = 38.54015732
+# car_Tr2 = 3.26377106
 
 
 # MPC
 spline_deg = 1
-
 track_radius = 1.25
 n_bspline_points = 30
-bspline_point_distance = 0.5
+bspline_point_distance = 1
 bspline_max_distance = n_bspline_points*bspline_point_distance
 b_spline_points = np.arange(0, bspline_max_distance, bspline_point_distance)
 assert len(b_spline_points) == n_bspline_points

@@ -70,7 +70,7 @@ class Controller:
         predicted_states = np.zeros([self.solver.N, self.solver.n_states])
 
         if len(midpoints) < 2:
-            return 0, -1, predicted_states, False
+            return 0, 0, predicted_states, False
 
         self.solver.initialize(state, midpoints, sim_out['max_speed'], mpc_dt)
 
@@ -80,6 +80,6 @@ class Controller:
         except Exception:
             solver_success = False
             steer = 0
-            throttle = -1
+            throttle = 0
 
         return steer, throttle, predicted_states, solver_success

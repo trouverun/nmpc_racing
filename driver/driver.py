@@ -29,7 +29,7 @@ def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exi
     mapping_pipeline = MappingPipeline()
 
     controller = Controller(dynamics_type)
-    data_storage = DataStorage(config.dynamics_data_folder, time_now)
+    data_storage = DataStorage(config.dynamics_data_folder, time_now + '_%s/' % dynamics_type)
 
     known_tracks = {}
     if not mapping_from_scratch:
@@ -90,10 +90,10 @@ def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exi
                 if done:
                     break
 
-                # if sim_out['lap_switch'] and record_lap_data:
-                #     filename = '%s/lap_%d_(max_speed_%.2f).png' % (track_output_dir, sim_out['laps_done'], sim_out['max_speed'])
-                #     track_data = {'blue_cones': mapping_out['blue_cones'], 'yellow_cones': mapping_out['yellow_cones']}
-                #     make_lap_plot(filename=filename, track_data=track_data, lap_data=sim_out['lap_data_dict'])
+                if sim_out['lap_switch'] and record_lap_data:
+                    filename = '%s/lap_%d_(max_speed_%.2f).png' % (track_output_dir, sim_out['laps_done'], sim_out['max_speed'])
+                    track_data = {'blue_cones': mapping_out['blue_cones'], 'yellow_cones': mapping_out['yellow_cones']}
+                    make_lap_plot(filename=filename, track_data=track_data, lap_data=sim_out['lap_data_dict'])
 
                 if known_track:
                     data_storage.record_data(sim_out)

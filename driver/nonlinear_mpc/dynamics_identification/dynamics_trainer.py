@@ -12,9 +12,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--visualize', type=bool, default=True)
     parser.add_argument('-r', '--resample', type=bool, default=False)
-    parser.add_argument('-e', '--epochs', type=int, default=250)
+    parser.add_argument('-e', '--epochs', type=int, default=100)
     parser.add_argument('-l', '--lr', type=float, default=1e+1)
-    parser.add_argument('-d', '--dataset', type=str, default="sine_input")
+    parser.add_argument('-d', '--dataset', type=str, default="12_01_2022__17_30_23_dynamic_bicycle")
     args = parser.parse_args()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -72,8 +72,8 @@ if __name__ == '__main__':
         train_sampler = SubsetRandomSampler(train_indices)
         valid_indices = np.setdiff1d(all_indices, train_indices)
         valid_sampler = SubsetRandomSampler(valid_indices)
-        train_loader = DataLoader(dataset, sampler=train_sampler, batch_size=64)
-        valid_loader = DataLoader(dataset, sampler=valid_sampler, batch_size=64)
+        train_loader = DataLoader(dataset, sampler=train_sampler, batch_size=1024)
+        valid_loader = DataLoader(dataset, sampler=valid_sampler, batch_size=1024)
 
         epochs = args.epochs
         lr = args.lr

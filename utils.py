@@ -3,12 +3,21 @@ import cv2
 import matplotlib.pyplot as plt
 import pickle
 
+from matplotlib.colors import Normalize
+
+import config
+
 
 def make_lap_plot(filename, track_data, lap_data):
     plt.figure(figsize=(32, 32))
-    plt.scatter(track_data['blue_cones'][:, 0], track_data['blue_cones'][:, 1], c='blue', s=10)
-    plt.scatter(track_data['yellow_cones'][:, 0], track_data['yellow_cones'][:, 1], c='yellow', s=10)
-    plt.scatter(lap_data['pos'][:, 0], lap_data['pos'][:, 1], c='red', s=10)
+    cmap = plt.colormaps["cool"]
+    plt.scatter(track_data['blue_cones'][:, 0], track_data['blue_cones'][:, 1], c='blue', s=150)
+    plt.scatter(track_data['yellow_cones'][:, 0], track_data['yellow_cones'][:, 1], c='yellow', s=150)
+    plt.scatter(lap_data['pos'][:, 0], lap_data['pos'][:, 1], c=cmap(1/config.car_max_speed*lap_data['speed']), s=100)
+    try:
+        plt.colorbar(plt.cm.ScalarMappable(norm=Normalize(0, config.car_max_speed), cmap=cmap), label="Car speed")
+    except Exception as e:
+        print(e)
     plt.savefig(filename)
 
 def RpToTrans(R, p):

@@ -11,7 +11,7 @@ parser.add_argument('--sim_path', type=str, default="/home/aleksi/Formula-Studen
 parser.add_argument('--dynamics_type', type=str, default="kinematic_bicycle")
 parser.add_argument('--mapping_from_scratch', type=bool, default=False)
 parser.add_argument('--camera_disabled', type=bool, default=True)
-parser.add_argument('--run_data_path', type=str, default='/home/aleksi/PycharmProjects/autonomous_racing/run_data/')
+parser.add_argument('--run_data_path', type=str, default='/home/aleksi/PycharmProjects/nmpc_racing/run_data/')
 args = parser.parse_args()
 
 render_queue = Queue()
@@ -19,6 +19,7 @@ graph_queue = Queue()
 exit_event = Event()
 
 map_list = ['TrainingMap', 'TrainingMap_reverse', 'CompetitionMapTestday2', 'CompetitionMap1']
+map_list = ['TrainingMap', 'TrainingMap_reverse']
 driver = Process(
     target=driver_process,
     args=(
