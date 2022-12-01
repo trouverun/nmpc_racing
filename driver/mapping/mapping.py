@@ -19,19 +19,15 @@ class MappingPipeline:
             self.yellow_cones = []
 
     def _update_cones(self, cones, measured_cones, R_car, car_pos, v1, v2, v3, alpha=0.05):
-        if len(measured_cones.shape) != 2:
-            return
-
         n_initial_cones = len(cones)
         cone_array = np.asarray(cones)
         observed_cones = []
 
         # Adjust cone variance based on distance
         cone_distances = np.sqrt(np.square(car_pos[:2] - measured_cones[:, :2]).sum(axis=1))
-        dist_variance = np.where(cone_distances > 10, (cone_distances - 10) / (8/0.15), np.zeros_like(cone_distances))
-        dist_variance = np.clip(dist_variance, 0, 0.15)
+        dist_variance = np.where(cone_distances > 10, (cone_distances - config.variance_increase_distance) / (config.variance_increase_distance/config.additional_cone_pos_variance), np.zeros_like(cone_distances))
+        dist_variance = np.clip(dist_variance, 0, config.additional_cone_pos_variance)
         measurement_variance = dist_variance + config.cone_position_variance
-        # measurement_variance = np.repeat(config.cone_position_variance, len(measured_cones))
 
         # For each measured cone, calculated the likelihood that it corresponds to an existing cone in the map.
         # If likelihood is below a threshold, a new cone is added to the map, otherwise the position of the most likely match is adjusted
@@ -186,8 +182,10 @@ class MappingPipeline:
         t1 = time.time_ns()
         # Only update the map during the first lap:
         if not skip:
-            self._update_cones(self.blue_cones, located_blue_cones, R_car, mapping_pos, v1, v2, v3)
-            self._update_cones(self.yellow_cones, located_yellow_cones, R_car, mapping_pos, v1, v2, v3)
+            if len(located_blue_cones):
+                self._update_cones(self.blue_cones, located_blue_cones, R_car, mapping_pos, v1, v2, v3)
+            if len(located_yellow_cones):
+                self._update_cones(self.yellow_cones, located_yellow_cones, R_car, mapping_pos, v1, v2, v3)
         blue_array = np.array([])
         yellow_array = np.array([])
         if len(self.blue_cones):

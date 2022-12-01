@@ -25,10 +25,7 @@ class SimWrapper:
         self.not_moved_steps = 0
         self.known_track = False
         self.start_time = None
-        self.max_samples = 50
-        self.times = np.zeros(self.max_samples)
-        self.ws = np.zeros(self.max_samples)
-        self.samples = 0
+        self.lap_data = []
 
     def start_sim(self, map_name, known_track=False):
         try:
@@ -70,9 +67,7 @@ class SimWrapper:
         referee_state = self.client.getRefereeState()
         self.laps_driven = len(referee_state.laps)
         self.start_time = None
-        self.times = np.zeros(self.max_samples)
-        self.ws = np.zeros(self.max_samples)
-        self.samples = 0
+        self.lap_data = []
 
     def stop_sim(self, wait=True):
         os.kill(self.simulator_pid, signal.SIGKILL)
@@ -87,6 +82,8 @@ class SimWrapper:
             print("FAILED SOLVES ------------------------------------------")
             return None, True
 
+        lap_switch = False
+        lap_data_dict = {}
         if not disable_referee:
             referee_state = self.client.getRefereeState()
             # If we have collided with a cone, we are done:
@@ -98,6 +95,13 @@ class SimWrapper:
                 print("LAPPED -------------------------------------------")
                 self.laps_driven += 1
                 self.max_speed *= config.lap_speed_increase
+                lap_switch = True
+                tmp = np.asarray(self.lap_data)
+                lap_data_dict = {
+                    'pos': tmp[:, :2],
+                    'speed': np.sqrt((tmp[:, 2:4]**2).sum(axis=1)),
+                }
+                self.lap_data = []
 
         using_mapping_camera = using_mapping_camera and not (self.laps_driven > 0 or self.known_track)
         iteration_timestamp = time.time_ns()
@@ -183,6 +187,8 @@ class SimWrapper:
         speed = np.sqrt(np.square(car_linear_velocity).sum())
         slip = np.arctan2(car_linear_velocity[1], car_linear_velocity[0])
 
+        self.lap_data.append(np.r_[car_pos[:2], car_linear_velocity[:2]])
+
         outputs = {
             'timestamp': iteration_timestamp, 'car_pos': car_pos, 'car_hdg': car_hdg,
             'car_linear_vel': car_linear_velocity, 'car_angular_vel': car_angular_velocity,
@@ -194,7 +200,8 @@ class SimWrapper:
             'known_track': self.known_track, 'laps_done': self.laps_driven, 'max_speed': self.max_speed,
             'fl_rpm': fl_rpm, 'fr_rpm': fr_rpm, 'rl_rpm': rl_rpm, 'rr_rpm': rr_rpm,
             'gt_angular_vel': gt_angular_velocity, 'gt_angular_acc': gt_angular_acc,
-            'time_passed_s': (iteration_timestamp - self.start_time) / 1e9
+            'time_passed_s': (iteration_timestamp - self.start_time) / 1e9,
+            'lap_switch': lap_switch, 'lap_data_dict': lap_data_dict
         }
 
         return outputs, False

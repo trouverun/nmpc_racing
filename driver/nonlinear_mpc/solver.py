@@ -114,21 +114,23 @@ class Solver:
         ocp.parameter_values = np.zeros(model.p.size()[0])
         self.n_learned_params = model.n_learned_params
 
-        ocp.solver_options.tf = 420
+        ocp.solver_options.tf = config.mpc_fast_lap_dt * config.mpc_horizon
         # ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
         # ocp.solver_options.qp_solver = "PARTIAL_CONDENSING_HPIPM"
         ocp.solver_options.qp_solver = 'FULL_CONDENSING_HPIPM'
+        # ocp.solver_options.hpipm_mode = 'ROBUST'
         ocp.solver_options.nlp_solver_type = "SQP"
         # ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
         ocp.solver_options.integrator_type = "DISCRETE"
 
-        ocp.solver_options.sim_method_jac_reuse = 1
+        ocp.solver_options.qp_solver_ric_alg = 0
+        ocp.solver_options.sim_method_jac_reuse = 0
         ocp.solver_options.sim_method_num_stages = 1
         ocp.solver_options.sim_method_num_steps = 1
         ocp.solver_options.nlp_solver_max_iter = config.solver_max_iter
         ocp.solver_options.print_level = 0
         ocp.solver_options.qp_tol = config.solver_tolerance
-        # ocp.solver_options.levenberg_marquardt = 1.0
+        # ocp.solver_options.levenberg_marquardt = 0.1
         self.acados_solver = AcadosOcpSolver(ocp, json_file="acados_ocp.json")
 
     def delay_compensation(self, state, dt):

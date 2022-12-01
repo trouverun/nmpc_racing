@@ -1,35 +1,54 @@
 import time
 import sys
+import os
 import config
 import pickle
 import numpy as np
+from datetime import datetime
+from utils import make_lap_plot
 from driver.sim_wrapper.sim import SimWrapper
 from driver.vision_pipeline.vision import VisionPipeline
 from driver.mapping.mapping import MappingPipeline
 from driver.nonlinear_mpc.controller import Controller
-from driver.nonlinear_mpc.dynamics_identification.data_collector import DataCollector
+from driver.nonlinear_mpc.dynamics_identification.data_storage import DataStorage
 
 
 def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exit_event, dynamics_type,
-                   skip_mapping=True, disable_camera=True):
+                   mapping_from_scratch, disable_camera, output_data_dir):
+
+    time_now = datetime.now().strftime("%m_%d_%Y__%H_%M_%S")
+    record_lap_data = output_data_dir is not None
+    session_output_dir = ''
+    if record_lap_data:
+        session_output_dir = output_data_dir + time_now + '_%s/' % dynamics_type
+        os.makedirs(session_output_dir, exist_ok=True)
+
     sys.path.append('driver')
     sim_wrapper = SimWrapper(sim_executable_path)
     vision_pipeline = VisionPipeline()
     mapping_pipeline = MappingPipeline()
 
     controller = Controller(dynamics_type)
-    data_storage = DataCollector()
+    data_storage = DataStorage(config.dynamics_data_folder, time_now)
 
     known_tracks = {}
-    if skip_mapping:
+    if not mapping_from_scratch:
         try:
             with open('tracks.pickle', 'rb') as handle:
                 known_tracks = pickle.load(handle)
-        except Exception:
+        except:
+            pass
+    else:
+        try:
+            os.remove('tracks.pickle')
+        except:
             pass
 
     while True:
         for map_name in map_list:
+            track_output_dir = session_output_dir + map_name
+            if record_lap_data:
+                os.makedirs(track_output_dir, exist_ok=True)
             controller.reset()
 
             blue_cones = None
@@ -58,7 +77,6 @@ def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exi
 
             # Drive until a collision with a cone, while increasing the maximum allowed speed after each lap
             while True:
-                # if known_track: break
                 should_disable_camera = disable_camera and known_track
                 using_mapping_camera = not using_mapping_camera
 
@@ -71,6 +89,11 @@ def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exi
 
                 if done:
                     break
+
+                # if sim_out['lap_switch'] and record_lap_data:
+                #     filename = '%s/lap_%d_(max_speed_%.2f).png' % (track_output_dir, sim_out['laps_done'], sim_out['max_speed'])
+                #     track_data = {'blue_cones': mapping_out['blue_cones'], 'yellow_cones': mapping_out['yellow_cones']}
+                #     make_lap_plot(filename=filename, track_data=track_data, lap_data=sim_out['lap_data_dict'])
 
                 if known_track:
                     data_storage.record_data(sim_out)

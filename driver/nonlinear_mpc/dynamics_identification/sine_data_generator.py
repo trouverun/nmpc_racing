@@ -1,18 +1,19 @@
 import numpy as np
+import config
 from driver.sim_wrapper.sim import SimWrapper
-from driver.nonlinear_mpc.dynamics_identification.data_collector import DataCollector
+from driver.nonlinear_mpc.dynamics_identification.data_storage import DataStorage
 import time
 
 
 sim_wrapper = SimWrapper("/home/aleksi/Formula-Student-Driverless-Simulator/FSDS.sh")
-data_storage = DataCollector("dataset1")
+data_storage = DataStorage(config.dynamics_data_folder, "sine_input")
 
 for map_name, experiment in [('Null_a', 'a'), ('Null_a', 's')]:
     throttle_amplitudes = [0]
     if experiment == 's':
-        throttle_amplitudes = [0.2, 0.3, 0.4]
+        throttle_amplitudes = [0.25]
     for t_amp in throttle_amplitudes:
-        periods = [2, 3, 5]
+        periods = [3]
         for period in periods:
             sim_wrapper.start_sim(map_name, True)
             steer, throttle = 0, 0

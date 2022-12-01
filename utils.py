@@ -1,6 +1,15 @@
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
+import pickle
 
+
+def make_lap_plot(filename, track_data, lap_data):
+    plt.figure(figsize=(32, 32))
+    plt.scatter(track_data['blue_cones'][:, 0], track_data['blue_cones'][:, 1], c='blue', s=10)
+    plt.scatter(track_data['yellow_cones'][:, 0], track_data['yellow_cones'][:, 1], c='yellow', s=10)
+    plt.scatter(lap_data['pos'][:, 0], lap_data['pos'][:, 1], c='red', s=10)
+    plt.savefig(filename)
 
 def RpToTrans(R, p):
     return np.r_[np.c_[R, p], [[0, 0, 0, 1]]]

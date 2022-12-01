@@ -6,27 +6,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
 from torch.utils.data import SubsetRandomSampler, DataLoader
-from driver.nonlinear_mpc.dynamics_identification.torch_dynamics import DynamicBicycle, DynamicsDataset
+from driver.nonlinear_mpc.dynamics_identification.torch_dynamics import DynamicBicycle, DynamicsDataset, KinematicBicycle
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--visualize', type=bool, default=False)
+    parser.add_argument('-v', '--visualize', type=bool, default=True)
     parser.add_argument('-r', '--resample', type=bool, default=False)
-    parser.add_argument('-e', '--epochs', type=int, default=500)
-    parser.add_argument('-l', '--lr', type=float, default=1e-1)
-    parser.add_argument('-d', '--dataset', type=str, default="dataset3")
+    parser.add_argument('-e', '--epochs', type=int, default=250)
+    parser.add_argument('-l', '--lr', type=float, default=1e+1)
+    parser.add_argument('-d', '--dataset', type=str, default="sine_input")
     args = parser.parse_args()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     torch_model = DynamicBicycle()
-    weights_path = "dynamic_bicycle_weights.pt"
+
+    weights_path = "weights/dynamic_bicycle_weights.pt"
     try:
-        torch_model.load_state_dict(torch.load(weights_path))
+        w = torch.load(weights_path)
+        for (k, v) in w.items():
+            print("%s = %.8f" % (k, v))
+        torch_model.load_state_dict(w)
     except:
         torch.save(torch_model.state_dict(), weights_path)
 
-    indices = np.load("car_data/%s/filtered_start_indices.npy" % args.dataset)
-    dataset = np.load("car_data/%s/filtered_odometry_data.npy" % args.dataset)
+    indices = np.load("%s/%s/filtered_start_indices.npy" % (config.dynamics_data_folder, args.dataset))
+    dataset = np.load("%s/%s/filtered_odometry_data.npy" % (config.dynamics_data_folder, args.dataset))
 
     inputs = []
     targets = []
@@ -130,10 +134,8 @@ if __name__ == '__main__':
         ]
 
         matplotlib.use('QtAgg')
-
         fig, ax = plt.subplots(len(titles), 1, figsize=(14, 10))
         fig.tight_layout()
-
         inputs = inputs.cpu().numpy()
 
         for title, idx in titles:
