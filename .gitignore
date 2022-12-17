@@ -10,3 +10,5 @@ __p
 *.pyc
 __pycache__/
 driver/nonlinear_mpc/dynamics_identification/debugscript.py
+run_data/
+car_data/
