@@ -288,6 +288,7 @@ def dynamics_model(dynamics_type):
     constraints.idxsh = idxsh
     constraints.idxsh_e = idxsh_e
 
+    # Costs
     cost.zl = zl
     cost.zl_e = zl_e
     cost.zu = zu
@@ -296,8 +297,6 @@ def dynamics_model(dynamics_type):
     cost.Zl_e = Zl_e
     cost.Zu = Zu
     cost.Zu_e = Zu_e
-
-    # Costs
     phi = atan2(cdy_fun(theta, cdy0), cdx_fun(theta, cdx0))
     e_contour = sin(phi) * (x - cx_fun(theta, cx0)) - cos(phi) * (y - cy_fun(theta, cy0))
     e_lag = -cos(phi) * (x - cx_fun(theta, cx0)) - sin(phi) * (y - cy_fun(theta, cy0))
@@ -306,7 +305,7 @@ def dynamics_model(dynamics_type):
     cost.yref = np.array([0, 0, 0, 0, 0, 0, 0])
     cost.yref_e = np.array([0, 0])
     cost.W = scipy.linalg.block_diag(
-        config.contour_weight, config.lag_weight, -sqrt(config.theta_weight),
+        config.contour_weight, config.lag_weight, -config.theta_weight,
         config.u_steer_weight, config.u_throttle_weight, config.steer_weight, config.throttle_weight
     )
     cost.W_e = scipy.linalg.block_diag(config.contour_weight, config.lag_weight)

@@ -8,7 +8,7 @@ dynamics_data_folder = "/home/aleksi/PycharmProjects/nmpc_racing/car_data/"
 # Simulator
 max_fsds_client_attempts = 10
 max_failed_mpc_solves = 10
-max_stuck_steps = 10
+max_stuck_steps = 50
 lap_speed_increase = 1.25
 controller_no_cones_attempts = 5
 max_collisions = 5
@@ -101,7 +101,7 @@ car_Tr2 = 3.24289775
 
 
 # MPC
-spline_deg = 1
+spline_deg = 2
 track_radius = 1.25
 n_bspline_points = 30
 bspline_point_distance = 1
@@ -115,9 +115,9 @@ mpc_fast_lap_hz = 15
 mpc_fast_lap_dt = 1/mpc_fast_lap_hz
 car_initial_max_speed = 4.5
 # Weights for nonlinear lsq cost:
-lag_weight = 100
+lag_weight = 50
 contour_weight = 25
-theta_weight = 0.25
+theta_weight = 0.5
 u_steer_weight = 2
 u_throttle_weight = 2
 steer_weight = 0.1
@@ -127,25 +127,16 @@ soft_u_theta_weight = 5
 soft_state_v_weight = 5
 soft_state_slip_weight = 5
 soft_state_theta_weight = 5
-soft_nl_track_circle_weight = 100
+soft_nl_track_circle_weight = 50
 soft_nl_max_v_weight = 10
 # solver params
 solver_max_iter = 10
 solver_tolerance = 1e-3
 
 
-# PETS
-pets_track_width = 1
-pets_horizon = 20
-pets_dt = 0.1
-pets_hidden_size = 64
-pets_n_hidden = 2
-pets_discounting_factor = 0.95
-pets_tightening_steps = 0
-pets_path_dev_cost = 10
-pets_path_progress_reward = 10
-pets_track_exit_cost = 5
-pets_u_steer_cost = 0.1
-pets_u_throttle_cost = 0.1
-pets_max_speed_violation_cost = 5
-pets_u_max = 5
+# Implement tire dynamics
+# Integrate linearized learned dynamics
+# Implement exact GP with small dataset
+# Compare big data linearized vs small data exact
+# How does quality of solution effect performance of linearized, since previous prediction is used as linearization point (small vs big max iter)?
+# Does driving residual to 0 when deviating too far help with performance (especially given above comparision)

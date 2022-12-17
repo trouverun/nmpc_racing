@@ -115,7 +115,7 @@ class MappingPipeline:
                     blue_array = blue_array[available_blue]
 
         # Iterate through all midpoints, and find the track path by looking for the nearest midpoint, starting from the car position.
-        # Path is constrained so that blue cones are to the left, and yellow cones to the right (wrt. direction we go through them)
+        # Path is constrained so that blue cones are to the left, and yellow cones to the right
         if len(matches):
             matches = np.asarray(matches)
             current = car_pos[:2].copy()

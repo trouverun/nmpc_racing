@@ -100,6 +100,7 @@ class SimWrapper:
                 lap_data_dict = {
                     'pos': tmp[:, :2],
                     'speed': np.sqrt((tmp[:, 2:4]**2).sum(axis=1)),
+                    'time': referee_state.laps[-1]
                 }
                 self.lap_data = []
 

@@ -15,22 +15,25 @@ from driver.nonlinear_mpc.dynamics_identification.data_storage import DataStorag
 
 def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exit_event, dynamics_type,
                    mapping_from_scratch, disable_camera, output_data_dir):
-
+    # Create output directory:
     time_now = datetime.now().strftime("%m_%d_%Y__%H_%M_%S")
-    record_lap_data = output_data_dir is not None
+    should_record_lap_data = output_data_dir is not None
     session_output_dir = ''
-    if record_lap_data:
-        session_output_dir = output_data_dir + time_now + '_%s/' % dynamics_type
+    if should_record_lap_data:
+        if not output_data_dir.endswith('/'):
+            output_data_dir += '/'
+        session_output_dir = '%s%s_%s/' % (output_data_dir, time_now, dynamics_type)
         os.makedirs(session_output_dir, exist_ok=True)
 
+    # Init driving system components:
     sys.path.append('driver')
     sim_wrapper = SimWrapper(sim_executable_path)
     vision_pipeline = VisionPipeline()
     mapping_pipeline = MappingPipeline()
-
     controller = Controller(dynamics_type)
-    data_storage = DataStorage(config.dynamics_data_folder, time_now + '_%s/' % dynamics_type)
+    data_storage = DataStorage(config.dynamics_data_folder, '%s_%s/' % (time_now, dynamics_type))
 
+    # Load track data:
     known_tracks = {}
     if not mapping_from_scratch:
         try:
@@ -47,7 +50,7 @@ def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exi
     while True:
         for map_name in map_list:
             track_output_dir = session_output_dir + map_name
-            if record_lap_data:
+            if should_record_lap_data:
                 os.makedirs(track_output_dir, exist_ok=True)
             controller.reset()
 
@@ -85,13 +88,16 @@ def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exi
                     sim_wrapper.stop_sim(wait=False)
                     return
 
-                sim_out, done = sim_wrapper.step(steer, throttle, solver_success, using_mapping_camera, should_disable_camera)
+                sim_out, done = sim_wrapper.step(steer, throttle, solver_success, using_mapping_camera,
+                                                 should_disable_camera)
 
                 if done:
                     break
 
-                if sim_out['lap_switch'] and record_lap_data:
-                    filename = '%s/lap_%d_(max_speed_%.2f).png' % (track_output_dir, sim_out['laps_done'], sim_out['max_speed'])
+                # After each completed lap, plot the racing line and lap data:
+                if sim_out['lap_switch'] and should_record_lap_data:
+                    filename = '%s/lap_%d_(max_speed_%.2f).png' % (
+                        track_output_dir, sim_out['laps_done'], sim_out['max_speed'])
                     track_data = {'blue_cones': mapping_out['blue_cones'], 'yellow_cones': mapping_out['yellow_cones']}
                     make_lap_plot(filename=filename, track_data=track_data, lap_data=sim_out['lap_data_dict'])
 
@@ -129,6 +135,7 @@ def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exi
                     mapping_pos=mapping_pos, mapping_hdg=mapping_hdg
                 )
 
+                # Get the next control and prediction horizon from nMPC controller:
                 solver_start = time.time_ns()
                 steer, throttle, predicted_states, solver_success = controller.get_control(
                     sim_out, mapping_out['midpoints'], mpc_dt
@@ -136,7 +143,7 @@ def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exi
                 solve_ms = (time.time_ns() - solver_start) / 1e6
                 predicted_extracted = controller.extract_common_info(predicted_states)
 
-                # Data visualization:
+                # Visualize the camera view and/or map view:
                 render_data = {
                     'disable_camera': should_disable_camera,
                     'using_mapping_camera': sim_out['using_mapping_camera'],
@@ -153,11 +160,12 @@ def driver_process(sim_executable_path, map_list, render_queue, graph_queue, exi
                 }
                 render_queue.put(render_data)
 
+                # Graph the odometry data:
                 iter_time_ms = (time.time_ns() - t_start_ns) / 1e6
                 graph_data = {
                     'linv': [sim_out['car_linear_vel'][0], sim_out['car_linear_vel'][1]],
                     'lina': [sim_out['car_linear_acc'][0], sim_out['car_linear_acc'][1]],
-                    'angular': [sim_out['car_angular_vel'] * 180/np.pi, sim_out['gt_angular_vel'] * 180/np.pi],
+                    'angular': [sim_out['car_angular_vel'] * 180 / np.pi, sim_out['gt_angular_vel'] * 180 / np.pi],
                     'control': [steer, throttle],
                     'sim': [sim_out['frame_time_ms']],
                     'vision': [vision_ms],

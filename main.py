@@ -19,7 +19,6 @@ graph_queue = Queue()
 exit_event = Event()
 
 map_list = ['TrainingMap', 'TrainingMap_reverse', 'CompetitionMapTestday2', 'CompetitionMap1']
-map_list = ['TrainingMap', 'TrainingMap_reverse']
 driver = Process(
     target=driver_process,
     args=(
